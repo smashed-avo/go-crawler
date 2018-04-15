@@ -4,8 +4,5 @@
 *.iml
 *.tgz
 
-#ignore the loader-media-wires binary
-/go-crawler
-
 #ignore vendor folder
 vendor
