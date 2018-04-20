@@ -4,19 +4,25 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/purell"
 	"golang.org/x/net/html"
 )
 
+// LinkFetcher defines a fetcher instance that processes a webpage
+type LinkFetcher struct {
+	client   	*http.Client
+}
+
+// New returns a pointer to a new fetcher
+func New(client *http.Client) *LinkFetcher {
+	return &LinkFetcher{client: client}
+}
+
 // Links extract title and all links from a given URL
-func Links(url string, chLinks chan string, chFinished chan bool, chErrors chan error) {
-	// Set timeout to 15s
-	c := &http.Client{
-		Timeout: 15 * time.Second,
-	}
-	resp, err := c.Get(url)
+func (f *LinkFetcher) Links(url string, chLinks chan string, chFinished chan bool, chErrors chan error) {
+
+	resp, err := f.client.Get(url)
 
 	if err != nil {
 		chErrors <- err

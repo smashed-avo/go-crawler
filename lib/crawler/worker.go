@@ -8,7 +8,13 @@ import (
 	"github.com/smashed-avo/go-crawler/lib/webpage"
 
 	"github.com/PuerkitoBio/goquery"
+	"net/http"
+	"time"
 )
+
+type Fetcher interface {
+	Links(url string, chLinks chan string, chFinished chan bool, chErrors chan error)
+}
 
 // Worker gets all links for a website and stores it in the node
 func Worker(node *data.Response, depth int, chQueue chan []*data.Response) {
@@ -20,7 +26,8 @@ func Worker(node *data.Response, depth int, chQueue chan []*data.Response) {
 	defer close(chFinished)
 	defer close(chErrors)
 
-	go webpage.Links(node.URL, chLinks, chFinished, chErrors)
+	fetcher := getFetcher()
+	go fetcher.Links(node.URL, chLinks, chFinished, chErrors)
 
 	// Subscribe to channels
 	for {
@@ -56,3 +63,12 @@ func GetPageTitle(u string) string {
 	}
 	return strings.TrimSpace(doc.Find("title").Text())
 }
+
+func getFetcher() (*webpage.LinkFetcher) {
+	// Set timeout to 15s
+	c := &http.Client{
+		Timeout: 15 * time.Second,
+	}
+	return webpage.New(c)
+}
+
