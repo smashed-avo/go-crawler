@@ -14,7 +14,7 @@ type Crawlerer interface {
 	Crawl(seedURL *url.URL, maxDepth int) *data.Response
 }
 
-// Crawlerer exported type for HandleCrawl function
+// Handler exported type for HandleCrawl function
 type Handler struct {
 	Crawler Crawlerer
 }
