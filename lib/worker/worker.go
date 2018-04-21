@@ -4,9 +4,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/smashed-avo/go-crawler/lib/data"
-
 	"github.com/PuerkitoBio/goquery"
+
+	"github.com/smashed-avo/go-crawler/lib/data"
 )
 
 // Collectorer interface to collector function
@@ -24,7 +24,7 @@ func NewWorker(c Collectorer) *Worker {
 	return &Worker{Collector: c}
 }
 
-// Do gets all links for a website and stores it in the node
+// Do gets all links for a website and stores them in the node
 func (w *Worker) Do(node *data.Response, depth int, chQueue chan []*data.Response) {
 	// Channels
 	chLinks := make(chan string)
@@ -71,11 +71,3 @@ func (w *Worker) GetPageTitle(u string) string {
 	}
 	return strings.TrimSpace(doc.Find("title").Text())
 }
-
-// func getFetcher() *webpage.LinkFetcher {
-// 	// Set timeout to 15s
-// 	c := &http.Client{
-// 		Timeout: 15 * time.Second,
-// 	}
-// 	return webpage.New(c)
-// }
