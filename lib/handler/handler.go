@@ -6,11 +6,21 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/smashed-avo/go-crawler/lib/crawler"
+	"github.com/smashed-avo/go-crawler/lib/data"
 )
 
+// Crawlerer interface for Crawl function, returns a crawl result from supplied URL
+type Crawlerer interface {
+	Crawl(seedURL *url.URL, maxDepth int) *data.Response
+}
+
+// Crawlerer exported type for HandleCrawl function
+type Handler struct {
+	Crawler Crawlerer
+}
+
 // HandleCrawl handles the crawl api request
-func HandleCrawl(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) HandleCrawl(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// Get URL parameter and validate/sanitise
@@ -35,7 +45,7 @@ func HandleCrawl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Start crawling process
-	res := crawler.Crawl(u, maxDepth)
+	res := h.Crawler.Crawl(u, maxDepth)
 
 	json.NewEncoder(w).Encode(res)
 }

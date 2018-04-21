@@ -6,8 +6,11 @@ import (
 	"github.com/smashed-avo/go-crawler/lib/data"
 )
 
+// Crawler receiver for crawl function
+type Crawler struct{}
+
 // Crawl Initiates crawl process given a set of seed URLs
-func Crawl(seedURL *url.URL, maxDepth int) (response *data.Response) {
+func (c *Crawler) Crawl(seedURL *url.URL, maxDepth int) *data.Response {
 	//setup channels to process nodes recursively
 	chQueue := make(chan []*data.Response)
 	defer close(chQueue)
