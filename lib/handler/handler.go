@@ -19,6 +19,10 @@ type Handler struct {
 	Crawler Crawlerer
 }
 
+func NewHandler(c Crawlerer) *Handler {
+	return &Handler{Crawler: c}
+}
+
 // HandleCrawl handles the crawl api request
 func (h *Handler) HandleCrawl(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")

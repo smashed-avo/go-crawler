@@ -1,4 +1,4 @@
-package webpage
+package links
 
 import (
 	"net/http"
@@ -9,20 +9,20 @@ import (
 	"golang.org/x/net/html"
 )
 
-// LinkFetcher defines a fetcher instance that processes a webpage
-type LinkFetcher struct {
-	client   	*http.Client
+// Collector processes a webpage and collect all links
+type Collector struct {
+	client *http.Client
 }
 
-// New returns a pointer to a new fetcher
-func New(client *http.Client) *LinkFetcher {
-	return &LinkFetcher{client: client}
+// New returns a pointer to a new collector
+func NewCollector(client *http.Client) *Collector {
+	return &Collector{client: client}
 }
 
 // Links extract title and all links from a given URL
-func (f *LinkFetcher) Links(url string, chLinks chan string, chFinished chan bool, chErrors chan error) {
+func (c *Collector) Collect(url string, chLinks chan string, chFinished chan bool, chErrors chan error) {
 
-	resp, err := f.client.Get(url)
+	resp, err := c.client.Get(url)
 
 	if err != nil {
 		chErrors <- err

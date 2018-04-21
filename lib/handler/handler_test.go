@@ -32,7 +32,7 @@ func (c *MockCrawler) Crawl(seedURL *url.URL, maxDepth int) *data.Response {
 	case emptyResponse:
 		return &data.Response{}
 	case successResponse:
-		return &data.Response{}
+		return &data.Response{Depth: 0, Title: "Success Web", URL: "https://www.successweb.com", Nodes: make([]*data.Response, 0)}
 	default:
 		panic(fmt.Sprintf("Invalid mockStateCrawler: %v", c.State))
 	}
@@ -52,9 +52,23 @@ func TestHandleCrawl(t *testing.T) {
 		{
 			Name:               "Get success",
 			state:              successResponse,
-			url:                "/crawl?url=hppts://successweb.com",
+			url:                "/crawl?url=https://www.successweb.com",
 			expectedStatusCode: 200,
-			expectedBody:       `{"depth":0,"title":"","url":"","nodes":null}`,
+			expectedBody:       `{"depth":0,"title":"Success Web","url":"https://www.successweb.com","nodes":[]}`,
+		},
+		{
+			Name:               "Success: Empty depth defaulted",
+			state:              successResponse,
+			url:                "/crawl?url=hppts://successweb.com&depth=",
+			expectedStatusCode: 200,
+			expectedBody:       `{"depth":0,"title":"Success Web","url":"https://www.successweb.com","nodes":[]}`,
+		},
+		{
+			Name:               "Success: passing depth",
+			state:              successResponse,
+			url:                "/crawl?url=hppts://successweb.com?depth=5",
+			expectedStatusCode: 200,
+			expectedBody:       `{"depth":0,"title":"Success Web","url":"https://www.successweb.com","nodes":[]}`,
 		},
 		{
 			Name:               "Bad Request: empty URL",
@@ -64,31 +78,17 @@ func TestHandleCrawl(t *testing.T) {
 			expectedBody:       ``,
 		},
 		{
-			Name:               "Success: Empty depth defaulted",
-			state:              emptyResponse,
-			url:                "/crawl?url=hppts://successweb.com&depth=",
-			expectedStatusCode: 200,
-			expectedBody:       `{"depth":0,"title":"","url":"","nodes":null}`,
-		},
-		{
 			Name:               "Bad Request: depth not int",
 			state:              emptyResponse,
-			url:                "/crawl?url=hppts://successweb.com&depth=aaaa",
+			url:                "/crawl?url=https://www.successweb.com&depth=aaaa",
 			expectedStatusCode: 400,
 			expectedBody:       ``,
-		},
-		{
-			Name:               "Success: passing depth",
-			state:              emptyResponse,
-			url:                "/crawl?url=hppts://successweb.com?depth=5",
-			expectedStatusCode: 200,
-			expectedBody:       `{"depth":0,"title":"","url":"","nodes":null}`,
 		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
-			h := &handler.Handler{Crawler: &MockCrawler{State: tc.state}}
+			h := handler.NewHandler(&MockCrawler{State: tc.state})
 
 			req, err := http.NewRequest("GET", tc.url, nil)
 			assert.NoError(err)

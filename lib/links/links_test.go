@@ -1,15 +1,13 @@
-package webpage_test
+package links_test
 
 import (
-	"errors"
-	"testing"
-	"net/http"
-	"io"
 	"bytes"
+	"errors"
+	"io"
+	"net/http"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/smashed-avo/go-crawler/lib/webpage"
 )
 
 type nopCloser struct {
@@ -18,7 +16,7 @@ type nopCloser struct {
 
 func (nopCloser) Close() error { return nil }
 
-type successClient struct{
+type successClient struct {
 	body string
 }
 
@@ -34,23 +32,23 @@ func (c errorClient) Get(_ string) (*http.Response, error) {
 
 func TestLinkFetcher(t *testing.T) {
 	tt := []struct {
-		name            string
-		body            string
-		stubClient      *http.Client
-		expectedResult  string
+		name           string
+		body           string
+		stubClient     *http.Client
+		expectedResult string
 	}{
 		{
-			name:            "Success POST",
-			body:            "{}",
+			name: "Success POST",
+			body: "{}",
 			// TODO Mock http client
-			stubClient:      &successClient{},
-			expectedResult:  "",
+			stubClient:     &successClient{},
+			expectedResult: "",
 		},
 		{
-			name:            "Client FAILED",
-			body:            "{}",
-			stubClient:      &errorClient{},
-			expectedResult:  "",
+			name:           "Client FAILED",
+			body:           "{}",
+			stubClient:     &errorClient{},
+			expectedResult: "",
 		},
 	}
 
@@ -77,4 +75,3 @@ func TestLinkFetcher(t *testing.T) {
 	}
 
 }
-
