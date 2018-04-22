@@ -1,7 +1,6 @@
 package links
 
 import (
-	"net/http"
 	"net/url"
 	"strings"
 
@@ -11,29 +10,23 @@ import (
 
 // Collector processes a webpage and collect all links
 type Collector struct {
-	client *http.Client
+	client WebClient
 }
 
-// New returns a pointer to a new collector
-func NewCollector(client *http.Client) *Collector {
+// NewCollector returns a pointer to a new collector
+func NewCollector(client WebClient) *Collector {
 	return &Collector{client: client}
 }
 
-// Links extract title and all links from a given URL
+// Collect extract title and all links from a given URL
 func (c *Collector) Collect(url string, chLinks chan string, chFinished chan bool, chErrors chan error) {
-
-	resp, err := c.client.Get(url)
-
+	// Fetch website
+	body, err := c.client.Get(url)
 	if err != nil {
 		chErrors <- err
 		return
 	}
-
-	b := resp.Body
-	defer b.Close()
-
-	z := html.NewTokenizer(b)
-
+	z := html.NewTokenizer(body)
 	for {
 		tt := z.Next()
 		switch tt {
@@ -59,6 +52,7 @@ func (c *Collector) Collect(url string, chLinks chan string, chFinished chan boo
 	}
 }
 
+// Sanitise URL to include only safe URLs without fragments
 func normalizeURL(u string) (string, error) {
 	parsedURL, err := url.Parse(u)
 	if err != nil {

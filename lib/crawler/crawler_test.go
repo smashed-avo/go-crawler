@@ -77,7 +77,7 @@ func TestCrawl(t *testing.T) {
 	assert := assert.New(t)
 
 	tt := []struct {
-		Name             string
+		name             string
 		state            mockStateWorker
 		maxDepth         int
 		url              string
@@ -85,7 +85,7 @@ func TestCrawl(t *testing.T) {
 		expectedResponse *data.Response
 	}{
 		{
-			Name:     "Success",
+			name:     "Success",
 			state:    successResponse,
 			maxDepth: 0,
 			url:      "https://www.successweb.com",
@@ -94,7 +94,7 @@ func TestCrawl(t *testing.T) {
 				&data.Response{Depth: 1, Title: "", URL: "https://www.successweb.com/children1", Nodes: []*data.Response{}}}},
 		},
 		{
-			Name:             "Empty",
+			name:             "Empty",
 			state:            emptyResponse,
 			maxDepth:         0,
 			url:              "https://www.successweb.com",
@@ -102,7 +102,7 @@ func TestCrawl(t *testing.T) {
 			expectedResponse: &data.Response{Depth: 0, Title: "Success Web", URL: "https://www.successweb.com", Nodes: []*data.Response{}},
 		},
 		{
-			Name:     "Reach Max Depth 2",
+			name:     "Reach Max Depth 2",
 			state:    maxDepthReachedResponse,
 			maxDepth: 2,
 			url:      "https://www.successweb.com",
@@ -111,7 +111,7 @@ func TestCrawl(t *testing.T) {
 				&data.Response{Depth: 1, Title: "", URL: "https://www.successweb.com/children1", Nodes: []*data.Response{}}}},
 		},
 		{
-			Name:     "Reach Max Depth 3",
+			name:     "Reach Max Depth 3",
 			state:    maxDepthReachedResponse,
 			maxDepth: 3,
 			url:      "https://www.successweb.com",
@@ -121,7 +121,7 @@ func TestCrawl(t *testing.T) {
 					&data.Response{Depth: 2, Title: "", URL: "https://www.successweb.com/children2", Nodes: []*data.Response{}}}}}},
 		},
 		{
-			Name:     "Reach Max Depth 4",
+			name:     "Reach Max Depth 4",
 			state:    maxDepthReachedResponse,
 			maxDepth: 4,
 			url:      "https://www.successweb.com",
@@ -132,7 +132,7 @@ func TestCrawl(t *testing.T) {
 						&data.Response{Depth: 3, Title: "", URL: "https://www.successweb.com/children3", Nodes: []*data.Response{}}}}}}}},
 		},
 		{
-			Name:     "Reach Max Depth 5",
+			name:     "Reach Max Depth 5",
 			state:    maxDepthReachedResponse,
 			maxDepth: 5,
 			url:      "https://www.successweb.com",
@@ -146,7 +146,7 @@ func TestCrawl(t *testing.T) {
 	}
 
 	for _, tc := range tt {
-		t.Run(tc.Name, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			u, err := url.ParseRequestURI(tc.url)
 			assert.NoError(err)
 
@@ -158,7 +158,7 @@ func TestCrawl(t *testing.T) {
 
 			r := c.Crawl(u, tc.maxDepth)
 
-			assert.Equal(tc.expectedResponse, r, tc.Name)
+			assert.Equal(tc.expectedResponse, r, tc.name)
 		})
 	}
 }

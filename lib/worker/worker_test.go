@@ -84,7 +84,7 @@ func TestDo(t *testing.T) {
 	assert := assert.New(t)
 
 	tt := []struct {
-		Name                string
+		name                string
 		state               mockStateCollector
 		depth               int
 		node                *data.Response
@@ -93,7 +93,7 @@ func TestDo(t *testing.T) {
 		expectedNode        *data.Response
 	}{
 		{
-			Name:                "Success - Collect three links",
+			name:                "Success - Collect three links",
 			state:               successThreeLinksFinished,
 			depth:               1,
 			node:                &data.Response{Depth: 0, Title: "Success Web", URL: "https://www.successweb.com", Nodes: []*data.Response{}},
@@ -102,7 +102,7 @@ func TestDo(t *testing.T) {
 			expectedNode:        &data.Response{Depth: 0, Title: "Success Web", URL: "https://www.successweb.com", Nodes: []*data.Response{&link1node, &link2node, &link3node}},
 		},
 		{
-			Name:                "Success - Collect link with title",
+			name:                "Success - Collect link with title",
 			state:               successLinkWithTitleFinished,
 			depth:               1,
 			node:                &data.Response{Depth: 0, Title: "Success Web", URL: "https://www.successweb.com", Nodes: []*data.Response{}},
@@ -111,7 +111,7 @@ func TestDo(t *testing.T) {
 			expectedNode:        &data.Response{Depth: 0, Title: "Success Web", URL: "https://www.successweb.com", Nodes: []*data.Response{&linkWithTitleNode}},
 		},
 		{
-			Name:                "Success - Repeated link",
+			name:                "Success - Repeated link",
 			state:               successRepeatedLinkFinished,
 			depth:               1,
 			node:                &data.Response{Depth: 0, Title: "Success Web", URL: "https://www.successweb.com", Nodes: []*data.Response{}},
@@ -120,7 +120,7 @@ func TestDo(t *testing.T) {
 			expectedNode:        &data.Response{Depth: 0, Title: "Success Web", URL: "https://www.successweb.com", Nodes: []*data.Response{&link1node, &link2node, &link3node}},
 		},
 		{
-			Name:                "Success - Non parseable link excluded",
+			name:                "Success - Non parseable link excluded",
 			state:               successNonParseableLinkNotIncluded,
 			depth:               1,
 			node:                &data.Response{Depth: 0, Title: "Success Web", URL: "https://www.successweb.com", Nodes: []*data.Response{}},
@@ -129,7 +129,7 @@ func TestDo(t *testing.T) {
 			expectedNode:        &data.Response{Depth: 0, Title: "Success Web", URL: "https://www.successweb.com", Nodes: []*data.Response{&link1node, &link2node, &link3node}},
 		},
 		{
-			Name:                "Error - couldn't connect to site",
+			name:                "Error - couldn't connect to site",
 			state:               errored,
 			depth:               1,
 			node:                &data.Response{Depth: 0, Title: "Error Web", URL: "https://www.errorweb.com", Nodes: []*data.Response{}},
@@ -140,7 +140,7 @@ func TestDo(t *testing.T) {
 	}
 
 	for _, tc := range tt {
-		t.Run(tc.Name, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			m := MockCollector{State: tc.state}
 			w := worker.NewWorker(&m)
 
@@ -158,9 +158,9 @@ func TestDo(t *testing.T) {
 
 			values := <-q
 
-			assert.Equal(tc.expectedVisited.M, v.M, tc.Name)
-			assert.Equal(tc.expectedQueueValues, values, tc.Name)
-			assert.Equal(tc.expectedNode, tc.node, tc.Name)
+			assert.Equal(tc.expectedVisited.M, v.M, tc.name)
+			assert.Equal(tc.expectedQueueValues, values, tc.name)
+			assert.Equal(tc.expectedNode, tc.node, tc.name)
 		})
 	}
 }

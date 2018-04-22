@@ -43,49 +43,49 @@ func TestHandleCrawl(t *testing.T) {
 	assert := assert.New(t)
 
 	tt := []struct {
-		Name               string
+		name               string
 		state              mockStateCrawler
 		url                string
 		expectedStatusCode int
 		expectedBody       string
 	}{
 		{
-			Name:               "Get success",
+			name:               "Get success",
 			state:              successResponse,
 			url:                "/crawl?url=https://www.successweb.com",
 			expectedStatusCode: 200,
 			expectedBody:       `{"depth":0,"title":"Success Web","url":"https://www.successweb.com","nodes":[]}`,
 		},
 		{
-			Name:               "Success: Empty depth defaulted",
+			name:               "Success: Empty depth defaulted",
 			state:              successResponse,
 			url:                "/crawl?url=https://successweb.com&depth=",
 			expectedStatusCode: 200,
 			expectedBody:       `{"depth":0,"title":"Success Web","url":"https://www.successweb.com","nodes":[]}`,
 		},
 		{
-			Name:               "Success: passing depth",
+			name:               "Success: passing depth",
 			state:              successResponse,
 			url:                "/crawl?url=https://successweb.com?depth=5",
 			expectedStatusCode: 200,
 			expectedBody:       `{"depth":0,"title":"Success Web","url":"https://www.successweb.com","nodes":[]}`,
 		},
 		{
-			Name:               "Bad Request: empty URL",
+			name:               "Bad Request: empty URL",
 			state:              emptyResponse,
 			url:                "/crawl",
 			expectedStatusCode: 400,
 			expectedBody:       ``,
 		},
 		{
-			Name:               "Bad Request: non parseable URL",
+			name:               "Bad Request: non parseable URL",
 			state:              emptyResponse,
 			url:                "/crawl?url=http//notanurl.com",
 			expectedStatusCode: 400,
 			expectedBody:       ``,
 		},
 		{
-			Name:               "Bad Request: depth not int",
+			name:               "Bad Request: depth not int",
 			state:              emptyResponse,
 			url:                "/crawl?url=https://www.successweb.com&depth=aaaa",
 			expectedStatusCode: 400,
@@ -94,7 +94,7 @@ func TestHandleCrawl(t *testing.T) {
 	}
 
 	for _, tc := range tt {
-		t.Run(tc.Name, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			h := handler.NewHandler(&MockCrawler{State: tc.state})
 
 			req, err := http.NewRequest("GET", tc.url, nil)
@@ -103,14 +103,14 @@ func TestHandleCrawl(t *testing.T) {
 			w := httptest.NewRecorder()
 			h.HandleCrawl(w, req)
 
-			assert.Equal(tc.expectedStatusCode, w.Code, tc.Name)
+			assert.Equal(tc.expectedStatusCode, w.Code, tc.name)
 
 			body, err := ioutil.ReadAll(w.Body)
 			require.NoError(t, err, "Error reading response")
 			if string(body) != "" {
-				assert.JSONEq(tc.expectedBody, string(body), tc.Name)
+				assert.JSONEq(tc.expectedBody, string(body), tc.name)
 			} else {
-				assert.Equal(tc.expectedBody, string(body), tc.Name)
+				assert.Equal(tc.expectedBody, string(body), tc.name)
 			}
 		})
 	}
