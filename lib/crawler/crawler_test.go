@@ -73,7 +73,6 @@ func (w *MockWorker) GetPageTitle(u string) string {
 	}
 }
 
-// GET /crawl
 func TestCrawl(t *testing.T) {
 	assert := assert.New(t)
 
