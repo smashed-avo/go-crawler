@@ -8,7 +8,7 @@ import (
 
 // Workerer is an interface to the worker function
 type Workerer interface {
-	Do(node *data.Response, depth int, chQueue chan []*data.Response)
+	Do(node *data.Response, depth int, chQueue chan []*data.Response, visited *data.Visited)
 	GetPageTitle(u string) string
 }
 
@@ -30,7 +30,8 @@ func (c *Crawler) Crawl(seedURL *url.URL, maxDepth int) *data.Response {
 	defer close(c.ChQueue)
 
 	// Maintain visited URL to detect loops
-	visited := make(map[string]bool)
+	visited := &data.Visited{M: make(map[string]bool)}
+	visited.M[seedURL.String()] = true
 
 	// add first parent node to queue
 	parent := data.Response{
@@ -41,24 +42,17 @@ func (c *Crawler) Crawl(seedURL *url.URL, maxDepth int) *data.Response {
 	}
 	depth := 1
 	workers := 1
-	go c.Worker.Do(&parent, depth, c.ChQueue)
+	go c.Worker.Do(&parent, depth, c.ChQueue, visited)
 
 	for workers > 0 {
 		nodes := <-c.ChQueue
 		workers--
 		if len(nodes) > 0 {
 			depth = nodes[0].Depth + 1
-			// println(depth)
-			// println(" , ")
-			// println(maxDepth)
 			if depth < maxDepth {
 				for _, node := range nodes {
-					if visited[node.URL] {
-						continue
-					}
-					visited[node.URL] = true
 					workers++
-					go c.Worker.Do(node, depth, c.ChQueue)
+					go c.Worker.Do(node, depth, c.ChQueue, visited)
 				}
 			}
 		}

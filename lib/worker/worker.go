@@ -25,7 +25,7 @@ func NewWorker(c Collectorer) *Worker {
 }
 
 // Do gets all links for a website and stores them in the node
-func (w *Worker) Do(node *data.Response, depth int, chQueue chan []*data.Response) {
+func (w *Worker) Do(node *data.Response, depth int, chQueue chan []*data.Response, visited *data.Visited) {
 	// Channels
 	chLinks := make(chan string)
 	chFinished := make(chan bool)
@@ -41,6 +41,12 @@ func (w *Worker) Do(node *data.Response, depth int, chQueue chan []*data.Respons
 	for {
 		select {
 		case link := <-chLinks:
+			visited.RLock()
+			// If node already visited, do not register
+			if visited.M[node.URL] {
+				continue
+			}
+			visited.RUnlock()
 			u, err := url.Parse(link)
 			if err != nil {
 				println(err.Error())

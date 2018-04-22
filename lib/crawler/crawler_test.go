@@ -33,7 +33,7 @@ type MockWorker struct {
 	ChQueue chan []*data.Response
 }
 
-func (w *MockWorker) Do(node *data.Response, depth int, chQueue chan []*data.Response) {
+func (w *MockWorker) Do(node *data.Response, depth int, chQueue chan []*data.Response, visited *data.Visited) {
 	switch w.State {
 	case emptyResponse:
 		nodes := make([]*data.Response, 0)
@@ -66,11 +66,7 @@ func (w *MockWorker) Do(node *data.Response, depth int, chQueue chan []*data.Res
 
 func (w *MockWorker) GetPageTitle(u string) string {
 	switch w.State {
-	case emptyResponse:
-		return "Success Web"
-	case successResponse:
-		return "Success Web"
-	case maxDepthReachedResponse:
+	case emptyResponse, successResponse, maxDepthReachedResponse:
 		return "Success Web"
 	default:
 		panic(fmt.Sprintf("Invalid mockStateWorker: %v", w.State))
