@@ -21,12 +21,16 @@ func NewCollector(client WebClient) *Collector {
 // Collect extract title and all links from a given URL
 func (c *Collector) Collect(url string, chLinks chan string, chFinished chan bool, chErrors chan error) {
 	// Fetch website
-	body, err := c.client.Get(url)
+	resp, err := c.client.Get(url)
 	if err != nil {
 		chErrors <- err
 		return
 	}
-	z := html.NewTokenizer(body)
+
+	b := resp.Body
+	defer b.Close()
+
+	z := html.NewTokenizer(b)
 	for {
 		tt := z.Next()
 		switch tt {

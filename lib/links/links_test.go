@@ -1,10 +1,11 @@
 package links_test
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
-	"strings"
+	"net/http"
 	"testing"
 
 	"github.com/smashed-avo/go-crawler/lib/links"
@@ -68,14 +69,20 @@ type MockClient struct {
 	State mockStateClient
 }
 
-func (c *MockClient) Get(url string) (io.Reader, error) {
+type nopCloser struct {
+	io.Reader
+}
+
+func (nopCloser) Close() error { return nil }
+
+func (c *MockClient) Get(url string) (*http.Response, error) {
 	switch c.State {
 	case success:
-		return strings.NewReader(threeLinksHTML), nil
+		return &http.Response{Body: nopCloser{bytes.NewBufferString(threeLinksHTML)}}, nil
 	case nonParseableLink:
-		return strings.NewReader(nonParseableLinkHTML), nil
+		return &http.Response{Body: nopCloser{bytes.NewBufferString(nonParseableLinkHTML)}}, nil
 	case sanitiseFragment:
-		return strings.NewReader(fragmentLinkHTML), nil
+		return &http.Response{Body: nopCloser{bytes.NewBufferString(fragmentLinkHTML)}}, nil
 	case errorClient:
 		return nil, errors.New(`couldn't fetch website`)
 	default:

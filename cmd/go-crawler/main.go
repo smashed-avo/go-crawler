@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"goji.io"
 	"goji.io/pat"
@@ -26,7 +27,10 @@ func main() {
 }
 
 func getHandler() *handler.Handler {
-	client := &links.HTTPClient{}
+	// Set timeout to 15s
+	client := &http.Client{
+		Timeout: 15 * time.Second,
+	}
 	l := links.NewCollector(client)
 	w := worker.NewWorker(l)
 	c := crawler.NewCrawler(w)

@@ -145,20 +145,26 @@ The project relies mainly in Go standard libraries. There are a few dependencies
 │   └── go-crawler               
 │       └── main.go              # Main package and file - starts the server
 └── lib                          # Application source code
-    ├── crawler                  # Crawler package - Divided in two files, crawler.go is the parent process and worker.go crawls individual website
+    ├── crawler                  # Crawler package
     │   └── crawler.go           # Process crawling seed URL and spins up the workers
-    │   └── worker.go            # Creates website node, obtains title and spins up go routines to inspect web content and extract all links  
+    │   └── crawler_test.go      # Unit tests for the crawler package
     ├── data                     # Data package
-    │   └── data.go              # Contains Response struct used to store crawled info and unmarshal as JSON response to API call  
+    │   └── data.go              # Contains Response struct used to store crawled info and unmarshal as JSON response to API call and the visited control struct to avoid loops
     ├── handler                  # Handler package
     │   └── handler.go           # Process seed URL and depth parameters and calls the crawling process  
-    └── webpage                  # Webpage package
-        └── links.go             # Loads the website, tokenises the DOM for the given URL and returns all links until end of document is reached
+    │   └── handler_test.go      # Unit tests for the handler package
+    └── links                    # Links package
+    │   └── links.go             # Loads the website, tokenises the DOM for the given URL and returns all links until end of document is reached
+    │   └── links_test.go        # Unit tests for the links package
+    │   └── client.go            # HTTP Client is split to make it testable
+    └── worker                   # Worker package
+        └── worker.go            # Creates website node, obtains title and spins up go routines to inspect web content and extract all links  
+        └── worker_test.go       # Unit tests for the worker package  
 ```
 
 The main moving parts of the system are:
 
-* crawler.go/Crawl - This is the parent process where most of the action happens:
+* crawler.go/Crawler - This is the parent process where most of the action happens:
   * Creates the parent node corresponding to the initial seed URL.
   * Fires an initial go Worker routine to process this first node.
   * Starts process loop where listen for new nodes added to the queue.
@@ -170,17 +176,17 @@ The main moving parts of the system are:
   * Fires process to obtain all website links and then stays in a loop listening for:
     * Link - New link is created as child node and added to the array. Continues listening for new links.
     * Error - There was a problem opening the site and the process ends.
-    * Done - Website parsing is complete and it communicates node array to parent process crawler.go/Crawl.
+    * Done - Website parsing is complete and it communicates node array to parent process crawler.go/Crawler.
   * GetPageTitle() is called on node creation to open the page and obtain the web title.
 
-* webpage.go/Links - This process is in charge of parsing the webpage and extract all links.
+* links.go/Collector - This process is in charge of parsing the webpage and extract all links.
   * Opens an http client with a sensible timeout so if the site is unreachable, the process does not get stuck.
   * Starts a tokenisation process of the DOM to identify tags that contains an href link.
   * When an href link is found there are 2 levels of sanitisation happening:
     * Make sure the link starts with http*
     * Using a library make sure that it is not only a parseable URL but also a valid link, removing double slashes and fragments (hashlinks).
 
-Synchronisation of the different routines at the two levels: Crawl<->Worker and Worker<->Links occurs via channels. These channel reads are blocking and sync the execution of the threads. This follows the paradigm in Go of blocking by communicating instead of by shared memory.
+Synchronisation of the different routines at the two levels: Crawler<->Worker and Worker<->Collector occurs via channels. These channel reads are blocking and sync the execution of the threads. This follows the paradigm in Go of blocking by communicating instead of by shared memory.
 
 ### Getting Started
 
@@ -201,6 +207,14 @@ The application runs by default in http://localhost:8000, on a later stage confi
 
 ### Testing
 
-Unit tests are missing and are planned to be added soon. Packages need interfaces so unit tests can use mocking of dependencies.
+Unit tests are added to all packages of the project except main (which is where the wiring happens and usually not testable). Code coverage is near 100%.
 
-More TBD
+```
+➜  go-crawler git:(master) ✗ go test $(go list ./... | grep -v /vendor/) -cover
+?       github.com/smashed-avo/go-crawler/cmd/go-crawler        [no test files]
+ok      github.com/smashed-avo/go-crawler/lib/crawler   0.017s  coverage: 100.0% of statements
+?       github.com/smashed-avo/go-crawler/lib/data      [no test files]
+ok      github.com/smashed-avo/go-crawler/lib/handler   0.018s  coverage: 100.0% of statements
+ok      github.com/smashed-avo/go-crawler/lib/links     0.006s  coverage: 96.0% of statements
+ok      github.com/smashed-avo/go-crawler/lib/worker    1.159s  coverage: 100.0% of statements
+```
